@@ -222,10 +222,10 @@ void loop() {
           Serial.println("LDR");
         else
           Serial.println("MANUAL");
-        break;
 
         bitti(1);
         teste_basla = false;
+        break;
       }
 
 
