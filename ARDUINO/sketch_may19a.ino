@@ -199,7 +199,6 @@ void loop() {
       ldrOku = map(analogRead(ldr),0,1023,LDR_HASSASIYET_ARALIGI[0],LDR_HASSASIYET_ARALIGI[1]);
       Serial.print("LDR: ");
       Serial.println(ldrOku);
-      digitalWrite(role, HIGH);
 
 
       if(kontEt == TEKRARLA){
@@ -257,7 +256,7 @@ void loop() {
         break;
     }
 
-
+      digitalWrite(role, HIGH);
       delay(bekle);
     }
   }
