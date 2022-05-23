@@ -224,6 +224,7 @@ void loop() {
 
         bitti(1);
         teste_basla = false;
+        digitalWrite(role, HIGH);
         break;
       }
 
@@ -249,6 +250,7 @@ void loop() {
         Serial.print("LDR Hassasiyeti\t\t: ");
         Serial.println(ldrAyar);
         Serial.print("LDR ile mi manual mi\t: ");
+        digitalWrite(role, HIGH);
         if(kontrol_yontemi == true)
           Serial.println("LDR");
         else
