@@ -9,8 +9,10 @@
  * **********************
  */
 
+
+
 #define TEKRARLA 100                      // Testin kaç defa tekrarlanacağını belirler
-#define STANDART_BEKLEME 5000             // Strandart olarak rölenin kaç saniyede bir açılacağını belirler. Sonradan değiştirilebilir.
+#define STANDART_BEKLEME 3000             // Strandart olarak rölenin kaç saniyede bir açılacağını belirler. Sonradan değiştirilebilir.
 #define TEKRAR_ACILMA 2000                // Cihazın kapandıktan sonra tekrar açılması için gereken süreyi belirler.
 int LDR_HASSASIYET_ARALIGI[2] = {0,1000}; // LDR'nin hassasiyetinin hangi değerler arasında olacağını belirler.
 int LDR_ON_SABIT_ARALIGI = 16;            // LDR fiziksel olarak makaron ile kısıtlandığında 0-1000 hassasiyetinde ışıkta 988 civarı bir değişim olur.
@@ -49,8 +51,7 @@ int sensorDegeri = 0,
     sure = 0,
     bekle = STANDART_BEKLEME,
     ldrOku = 0,
-    ldrAyar = LDR_HASSASIYET_ARALIGI[1] - LDR_ON_SABIT_ARALIGI;
-
+    ldrAyar = (int)LDR_HASSASIYET_ARALIGI[1] - LDR_ON_SABIT_ARALIGI;
 
 char sure_ldr_AyarKontrol = 0; // 0 -> Boş
                                // 1 -> süre
@@ -61,12 +62,9 @@ boolean baslat = false,
         kontrol_yontemi = true, //LDR ile mi yoksa gözle mi kontrol yapılacağını belirler. false->Gözle kontrol, true->LDR ile kontrol
         teste_basla = false;
 
+
+
 LiquidCrystal_I2C lcd(0x3F,16,2);
-
-
-
-
-
 
 
 void hata (char tekrarla = 5){
@@ -102,6 +100,7 @@ void setup() {
   delay(1500);
   lcd.clear();
 
+
   pinMode(role, OUTPUT);
   pinMode(buzzer, OUTPUT);
   pinMode(baslat_butonu, INPUT);
@@ -109,16 +108,19 @@ void setup() {
 
   digitalWrite(role, HIGH);
   digitalWrite(buzzer, LOW);
+
+
+
 }
 
-
-
 void loop() {
+
   sensorDegeri = analogRead(ldr);
   sure = map(analogRead(sureAyar),0,1023,3000,8000);
   baslat = digitalRead(baslat_butonu);
   ayar = digitalRead(sure_ldr_AyarKontrolButon);
   ldrOku = map(analogRead(ldr),0,1023,LDR_HASSASIYET_ARALIGI[0],LDR_HASSASIYET_ARALIGI[1]);
+
 
   switch(sure_ldr_AyarKontrol){
     case 0:
@@ -137,11 +139,14 @@ void loop() {
       bekle = sure;
     break;
     case 2:
-      ldrAyar = LDR_HASSASIYET_ARALIGI[1] - map(analogRead(sureAyar),0,1023,0,100);
+      ldrAyar = (int)LDR_HASSASIYET_ARALIGI[1] - map(analogRead(sureAyar),0,1023,0,100);
       lcd.setCursor(1,0);
       lcd.print("LDR Hassasiyeti");
       lcd.setCursor(2,1);
       lcd.print(ldrAyar);
+      Serial.println(LDR_HASSASIYET_ARALIGI[1]);
+      Serial.println(map(analogRead(sureAyar),0,1023,0,100));
+      
     break;
     case 3:
       if(kontrol_yontemi == true){
@@ -155,7 +160,6 @@ void loop() {
         lcd.setCursor(0,1);
         lcd.print(" ACIK >KAPALI< ");
       }
-
       if(baslat == HIGH){
         lcd.clear();
         kontrol_yontemi =! kontrol_yontemi;
@@ -164,6 +168,8 @@ void loop() {
           if(baslat == LOW) break;
         }
       }
+
+
     break;
     case 4:
       lcd.setCursor(3,0);
@@ -176,7 +182,6 @@ void loop() {
       sure_ldr_AyarKontrol++;
     break;
   }
-
   if(teste_basla == true){
     for(int kontEt=1;kontEt<=TEKRARLA;kontEt++){
       lcd.clear();
@@ -185,12 +190,9 @@ void loop() {
       lcd.setCursor(0,1);
       lcd.print(kontEt);
 
-
       if(ayar == HIGH){
         break;
       }
-
-
 
       digitalWrite(role, LOW);
       delay(TEKRAR_ACILMA);
@@ -202,6 +204,26 @@ void loop() {
 
       if(kontEt == TEKRARLA){
         sure_ldr_AyarKontrol = 0;
+        
+        lcd.clear();
+        lcd.setCursor(1,0);
+        lcd.print("Test Basarili");
+        lcd.setCursor(0,1);
+        lcd.print("Snrki Cihza Gcnz");
+
+        Serial.println();
+        Serial.println("Cihaz saglam. 100 defa test edildi.");
+        Serial.print("Delay Suresi\t\t:");
+        Serial.println(bekle);
+        Serial.print("LDR Hassasiyet\t\t:");
+        Serial.println(ldrAyar);
+        Serial.print("LDR ile mi manual mi\t:");
+        if(kontrol_yontemi == true)
+          Serial.println("LDR");
+        else
+          Serial.println("MANUAL");
+        break;
+
         bitti(1);
         teste_basla = false;
       }
@@ -220,12 +242,18 @@ void loop() {
         sure_ldr_AyarKontrol = 0;
         lcd.clear();
         Serial.println();
-        Serial.print("LDR Ayarı: ");
-        Serial.print(ldrAyar);
-        Serial.print(" --- ");
         Serial.print(kontEt);
         Serial.println(". Denemede hata yasandi!");
         Serial.println();
+        Serial.print("Delay Suresi\t\t: ");
+        Serial.println(bekle);
+        Serial.print("LDR Hassasiyeti\t\t: ");
+        Serial.println(ldrAyar);
+        Serial.print("LDR ile mi manual mi\t: ");
+        if(kontrol_yontemi == true)
+          Serial.println("LDR");
+        else
+          Serial.println("MANUAL");
         break;
     }
 
@@ -234,16 +262,11 @@ void loop() {
     }
   }
 
-
   if(baslat == HIGH && sure_ldr_AyarKontrol != 3){
-
 
     // Başlat butonuna basınca kodlar burada çalışacak..
     lcd.clear();
     teste_basla = true;
-
-
-
 
     while(baslat) {
       baslat = digitalRead(baslat_butonu);
@@ -266,6 +289,5 @@ void loop() {
       if(ayar == LOW) break;
     }
   }
-
 
 }
